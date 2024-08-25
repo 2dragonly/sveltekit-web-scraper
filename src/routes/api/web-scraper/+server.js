@@ -29,11 +29,19 @@ export async function POST({ request }) {
  */
 async function takeScreenshot(pageURL) {
 	const browser = await puppeteer.launch({
-		args: chromium.args,
+		args: [
+			...chromium.args,
+			'--no-sandbox',
+			'--disable-setuid-sandbox',
+			'--font-render-hinting=medium',
+			'--force-color-profile=srgb',
+			'--lang=zh-CN,zh'
+		],
 		defaultViewport: chromium.defaultViewport,
-		executablePath: dev ? LOCAL_CHROMIUM_PATH : await chromium.executablePath(CHROMIUM_DOWNLOAD_URL)
+		executablePath: await chromium.executablePath(),
+		headless: chromium.headless,
+		ignoreHTTPSErrors: true
 	});
-
 	const page = await browser.newPage();
 	page.setDefaultNavigationTimeout(60 * 1000);
 
@@ -52,6 +60,18 @@ async function takeScreenshot(pageURL) {
 		throw new Error(`Failed to load page: ${e?.message}`);
 	}
 
+	await page.evaluate(() => {
+		const style = document.createElement('style');
+		style.textContent = `
+		  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap');
+		  body,div,span,p,h1,h2,h3,h4,h5,h6{
+			font-family: 'Noto Sans SC'!important;
+		  }
+		`;
+		document.head.appendChild(style);
+	});
+
+	await page.waitForFunction(() => document.fonts.ready);
 	const screenshot = await page.screenshot({
 		type: 'webp',
 		captureBeyondViewport: false

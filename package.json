@@ -32,8 +32,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sparticuz/chromium-min": "123.0.1",
 		"@vercel/blob": "^0.22.1",
-		"puppeteer-core": "22.6.0",
-		"@sparticuz/chromium-min": "123.0.1"
+		"puppeteer-core": "^22.15.0"
 	}
 }
